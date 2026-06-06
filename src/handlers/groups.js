@@ -4,16 +4,19 @@ const {
   confirmDeleteGroupKeyboard,
   groupActionsKeyboard,
   groupSelectionKeyboard,
+  isNavigationText,
   mainMenuKeyboard,
   menuLabels
 } = require('../utils/keyboards');
 
 function registerGroupHandlers(bot) {
   bot.hears(menuLabels.createGroup, async (ctx) => {
+    ctx.session.flow = null;
     await startCreateGroup(ctx);
   });
 
   bot.hears(menuLabels.listGroups, async (ctx) => {
+    ctx.session.flow = null;
     await sendGroups(ctx);
   });
 
@@ -23,6 +26,18 @@ function registerGroupHandlers(bot) {
 
   bot.command('groups', async (ctx) => {
     await sendGroups(ctx);
+  });
+
+  bot.action('nav:menu', async (ctx) => {
+    ctx.session.flow = null;
+    await ctx.reply('Choose what to do next:', mainMenuKeyboard());
+    await ctx.answerCbQuery();
+  });
+
+  bot.action('nav:groups', async (ctx) => {
+    ctx.session.flow = null;
+    await sendGroups(ctx);
+    await ctx.answerCbQuery();
   });
 
   bot.action(/^group:view:([0-9a-f-]+)$/i, async (ctx) => {
@@ -99,6 +114,11 @@ function registerGroupHandlers(bot) {
       return next();
     }
 
+    if (isNavigationText(ctx.message.text.trim())) {
+      ctx.session.flow = null;
+      return next();
+    }
+
     if (flow.type === 'create_group') {
       await handleCreateGroup(ctx);
       return;
@@ -153,7 +173,7 @@ async function sendGroups(ctx) {
     return;
   }
 
-  await ctx.reply('Your groups:', groupSelectionKeyboard(groups, 'group:view'));
+  await ctx.reply('Your groups:', groupSelectionKeyboard(groups, 'group:view', 'nav:menu'));
 }
 
 function formatUserName(user) {

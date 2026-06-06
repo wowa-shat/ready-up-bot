@@ -17,8 +17,7 @@ function createBot() {
     { command: 'creategroup', description: 'Create a group' },
     { command: 'groups', description: 'List your groups' },
     { command: 'newevent', description: 'Create an event' },
-    { command: 'events', description: 'Show upcoming events' },
-    { command: 'eventdebug', description: 'Debug event notifications' }
+    { command: 'events', description: 'Show upcoming events' }
   ]).catch((error) => {
     console.error('Failed to set bot commands:', error.message);
   });

@@ -5,23 +5,21 @@ const groupService = require('../services/groupService');
 const userService = require('../services/userService');
 const { minutesFromNow } = require('../utils/time');
 const { formatEventStatus } = require('../utils/formatEvent');
-const { groupSelectionKeyboard, mainMenuKeyboard, menuLabels } = require('../utils/keyboards');
+const { groupSelectionKeyboard, isNavigationText, mainMenuKeyboard, menuLabels } = require('../utils/keyboards');
 
 function registerEventHandlers(bot) {
   bot.hears(menuLabels.createEvent, async (ctx) => {
+    ctx.session.flow = null;
     await startCreateEvent(ctx);
   });
 
   bot.hears(menuLabels.upcomingEvents, async (ctx) => {
+    ctx.session.flow = null;
     await sendUpcomingEvents(ctx);
   });
 
   bot.command('events', async (ctx) => {
     await sendUpcomingEvents(ctx);
-  });
-
-  bot.command('eventdebug', async (ctx) => {
-    await sendEventDebug(ctx);
   });
 
   bot.command('newevent', async (ctx) => {
@@ -63,6 +61,11 @@ function registerEventHandlers(bot) {
       return next();
     }
 
+    if (isNavigationText(ctx.message.text.trim())) {
+      ctx.session.flow = null;
+      return next();
+    }
+
     await handleCreateEventFlow(ctx, flow);
   });
 }
@@ -77,7 +80,7 @@ async function startCreateEvent(ctx) {
   }
 
   ctx.session.flow = { type: 'create_event', step: 'select_group' };
-  await ctx.reply('Choose a group for this event:', groupSelectionKeyboard(groups, 'event:group'));
+  await ctx.reply('Choose a group for this event:', groupSelectionKeyboard(groups, 'event:group', 'nav:menu'));
 }
 
 async function sendUpcomingEvents(ctx) {
@@ -104,40 +107,6 @@ async function sendUpcomingEvents(ctx) {
   }
 
   await ctx.reply(['Upcoming events:', ...lines].join('\n\n'), mainMenuKeyboard());
-}
-
-async function sendEventDebug(ctx) {
-  const user = await userService.getByTelegramId(ctx.from.id);
-  const groups = await groupService.listGroupsForUser(user.id);
-  const now = new Date();
-
-  if (groups.length === 0) {
-    await ctx.reply(`Server time: ${now.toISOString()}\nNo groups found.`, mainMenuKeyboard());
-    return;
-  }
-
-  const events = await eventService.listStartedEventsForGroups(groups.map((group) => group.id));
-
-  if (events.length === 0) {
-    await ctx.reply(
-      [
-        `Server time: ${now.toISOString()}`,
-        '',
-        'No started events found in your groups.'
-      ].join('\n'),
-      mainMenuKeyboard()
-    );
-    return;
-  }
-
-  const lines = events.map((event) => [
-    `${event.title} (${event.groups?.name || 'Unknown group'})`,
-    `starts_at: ${event.starts_at}`,
-    `start_notified: ${event.start_notified}`,
-    `status: ${event.status}`
-  ].join('\n'));
-
-  await ctx.reply([`Server time: ${now.toISOString()}`, ...lines].join('\n\n'), mainMenuKeyboard());
 }
 
 async function handleCreateEventFlow(ctx, flow) {

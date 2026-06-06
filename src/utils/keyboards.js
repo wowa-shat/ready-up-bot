@@ -15,12 +15,21 @@ function mainMenuKeyboard() {
   ]).resize();
 }
 
-function groupSelectionKeyboard(groups, action) {
-  return Markup.inlineKeyboard(
-    groups.map((group) => [
+function isMainMenuLabel(text) {
+  return Object.values(menuLabels).includes(text);
+}
+
+function isNavigationText(text) {
+  return isMainMenuLabel(text) || text.startsWith('/');
+}
+
+function groupSelectionKeyboard(groups, action, backAction = 'nav:menu') {
+  return Markup.inlineKeyboard([
+    ...groups.map((group) => [
       Markup.button.callback(group.name, `${action}:${group.id}`)
-    ])
-  );
+    ]),
+    [Markup.button.callback('⬅ Back', backAction)]
+  ]);
 }
 
 function groupActionsKeyboard(groupId, shareUrl) {
@@ -33,6 +42,9 @@ function groupActionsKeyboard(groupId, shareUrl) {
     ],
     [
       Markup.button.callback('🗑 Delete group', `group:delete:${groupId}`)
+    ],
+    [
+      Markup.button.callback('⬅ Back to groups', 'nav:groups')
     ]
   ]);
 }
@@ -50,6 +62,8 @@ module.exports = {
   confirmDeleteGroupKeyboard,
   groupActionsKeyboard,
   groupSelectionKeyboard,
+  isMainMenuLabel,
+  isNavigationText,
   mainMenuKeyboard,
   menuLabels
 };

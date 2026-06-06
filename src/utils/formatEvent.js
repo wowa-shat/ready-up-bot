@@ -1,4 +1,4 @@
-const { formatDateTime } = require('./time');
+const { formatRelativeTime } = require('./time');
 
 function formatEventStatus(event, responses = [], groupName = null) {
   const grouped = groupResponses(responses);
@@ -9,7 +9,7 @@ function formatEventStatus(event, responses = [], groupName = null) {
     `Event Name: ${event.title}`,
     `Event Description: ${event.description || '-'}`,
     '',
-    `Starts: ${formatDateTime(event.starts_at)}`,
+    `Starts: ${formatRelativeTime(event.starts_at)}`,
     `Required players: ${event.required_players}`,
     '',
     '',
@@ -28,7 +28,7 @@ function formatEventStarted(event, groupName = null) {
     `Event Name: ${event.title}`,
     `Event Description: ${event.description || '-'}`,
     '',
-    `Starts: ${formatDateTime(event.starts_at)}`,
+    `Starts: ${formatRelativeTime(event.starts_at)}`,
     `Required players: ${event.required_players}`
   ].join('\n');
 }

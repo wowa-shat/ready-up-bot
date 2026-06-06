@@ -124,26 +124,6 @@ async function listUpcomingEventsForGroups(groupIds) {
   return data;
 }
 
-async function listStartedEventsForGroups(groupIds, limit = 10) {
-  if (groupIds.length === 0) {
-    return [];
-  }
-
-  const { data, error } = await supabase
-    .from('events')
-    .select('id, title, starts_at, start_notified, status, groups(name)')
-    .in('group_id', groupIds)
-    .lte('starts_at', new Date().toISOString())
-    .order('starts_at', { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
-}
-
 async function markStartNotified(eventId) {
   const { data, error } = await supabase
     .from('events')
@@ -203,7 +183,6 @@ module.exports = {
   isUserEventMember,
   listEventsDueForStartNotification,
   listEventResponses,
-  listStartedEventsForGroups,
   listUpcomingEventsForGroups,
   markStartNotified,
   recomputeEventStatus,

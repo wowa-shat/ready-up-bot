@@ -58,7 +58,6 @@ Available commands:
 - `/newevent` starts the event creation flow.
 - `/newevent <group_id>` starts event creation for a specific group.
 - `/events` shows upcoming events that have not started yet.
-- `/eventdebug` shows server time and recent started events for notification troubleshooting.
 
 The main menu also provides buttons for creating groups, listing groups, creating events, and showing upcoming events. Group lists are shown as inline buttons; selecting a group opens group actions.
 
