@@ -44,6 +44,26 @@ async function getGroupForAdmin(groupId, userId) {
   return data;
 }
 
+async function deleteGroupForAdmin(groupId, userId) {
+  const group = await getGroupForAdmin(groupId, userId);
+
+  if (!group) {
+    return null;
+  }
+
+  const { error } = await supabase
+    .from('groups')
+    .delete()
+    .eq('id', groupId)
+    .eq('creator_id', userId);
+
+  if (error) {
+    throw error;
+  }
+
+  return group;
+}
+
 async function getGroupForMember(groupId, userId) {
   const { data, error } = await supabase
     .from('group_members')
@@ -90,6 +110,7 @@ async function listGroupMembers(groupId) {
 module.exports = {
   addMember,
   createGroup,
+  deleteGroupForAdmin,
   getGroupForAdmin,
   getGroupForMember,
   listGroupMembers,

@@ -63,6 +63,8 @@ Available commands:
 
 The main menu also provides buttons for creating groups, listing groups, adding members, creating events, and showing your Telegram ID. Group lists are shown as inline buttons; selecting a group opens group actions.
 
+Group creators can delete a group from the group actions screen. Deleting a group also deletes its members, events, and responses through database cascade rules.
+
 Members must use `/start` before they can be added. The add-member flow asks the group creator to choose a group, then send a Telegram contact or a numeric Telegram ID. Telegram only includes a usable `user_id` for some shared contacts, so `/myid` remains the reliable fallback.
 
 When an event is created, group members receive inline buttons for `Going`, `Maybe`, and `No`. Each response is upserted in `event_responses`. After each response, the event status is recomputed and marked `full` once the Going count reaches `required_players`. The creator receives a live status message with Going, Maybe, and No lists.

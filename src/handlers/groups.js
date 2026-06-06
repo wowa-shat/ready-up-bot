@@ -1,6 +1,7 @@
 const groupService = require('../services/groupService');
 const userService = require('../services/userService');
 const {
+  confirmDeleteGroupKeyboard,
   contactRequestKeyboard,
   groupActionsKeyboard,
   groupSelectionKeyboard,
@@ -87,6 +88,43 @@ function registerGroupHandlers(bot) {
       ].join('\n'),
       contactRequestKeyboard()
     );
+    await ctx.answerCbQuery();
+  });
+
+  bot.action(/^group:delete:([0-9a-f-]+)$/i, async (ctx) => {
+    const groupId = ctx.match[1];
+    const user = await userService.getByTelegramId(ctx.from.id);
+    const group = await groupService.getGroupForAdmin(groupId, user.id);
+
+    if (!group) {
+      await ctx.answerCbQuery('Only the group creator can delete this group.');
+      return;
+    }
+
+    await ctx.editMessageText(
+      [
+        `Delete group: ${group.name}?`,
+        '',
+        'This will also delete group members, events, and responses.'
+      ].join('\n'),
+      confirmDeleteGroupKeyboard(group.id)
+    );
+    await ctx.answerCbQuery();
+  });
+
+  bot.action(/^group:delete_confirm:([0-9a-f-]+)$/i, async (ctx) => {
+    const groupId = ctx.match[1];
+    const user = await userService.getByTelegramId(ctx.from.id);
+    const group = await groupService.deleteGroupForAdmin(groupId, user.id);
+
+    if (!group) {
+      await ctx.answerCbQuery('Only the group creator can delete this group.');
+      return;
+    }
+
+    ctx.session.flow = null;
+    await ctx.editMessageText(`Group deleted: ${group.name}`);
+    await ctx.reply('Choose an action:', mainMenuKeyboard());
     await ctx.answerCbQuery();
   });
 

@@ -29,6 +29,18 @@ function groupActionsKeyboard(groupId) {
     [
       Markup.button.callback('Add member', `group:add:${groupId}`),
       Markup.button.callback('Create event', `event:group:${groupId}`)
+    ],
+    [
+      Markup.button.callback('Delete group', `group:delete:${groupId}`)
+    ]
+  ]);
+}
+
+function confirmDeleteGroupKeyboard(groupId) {
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback('Yes, delete', `group:delete_confirm:${groupId}`),
+      Markup.button.callback('Cancel', `group:view:${groupId}`)
     ]
   ]);
 }
@@ -42,6 +54,7 @@ function contactRequestKeyboard() {
 }
 
 module.exports = {
+  confirmDeleteGroupKeyboard,
   contactRequestKeyboard,
   groupActionsKeyboard,
   groupSelectionKeyboard,
