@@ -16,6 +16,7 @@ let stopEventStartNotifier = null;
 
 bot.launch()
   .then(() => {
+    console.log('ReadyUpBot polling started.');
     stopEventStartNotifier = startEventStartNotifier(bot);
     console.log('ReadyUpBot is running.');
   })

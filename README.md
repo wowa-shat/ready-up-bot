@@ -58,6 +58,7 @@ Available commands:
 - `/newevent` starts the event creation flow.
 - `/newevent <group_id>` starts event creation for a specific group.
 - `/events` shows upcoming events that have not started yet.
+- `/eventdebug` shows server time and recent started events for notification troubleshooting.
 
 The main menu also provides buttons for creating groups, listing groups, creating events, and showing upcoming events. Group lists are shown as inline buttons; selecting a group opens group actions.
 
@@ -71,7 +72,7 @@ New projects can run `src/db/schema.sql` directly.
 
 When an event is created, group members receive inline buttons for `Going`, `Maybe`, and `No`. Each response is upserted in `event_responses`. After each response, the event status is recomputed and marked `full` once the Going count reaches `required_players`. The creator receives a live status message with Going, Maybe, and No lists.
 
-The bot checks for started events every minute. When an event start time has passed, it sends a start notification to group members and marks the event as notified.
+The bot checks for started events every 30 seconds. When an event start time has passed, it sends a start notification to group members and marks the event as notified. Railway logs include `[event-notifier]` lines for startup, due event count, send results, and marked notifications.
 
 ## Deployment
 

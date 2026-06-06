@@ -20,6 +20,10 @@ function registerEventHandlers(bot) {
     await sendUpcomingEvents(ctx);
   });
 
+  bot.command('eventdebug', async (ctx) => {
+    await sendEventDebug(ctx);
+  });
+
   bot.command('newevent', async (ctx) => {
     const parts = ctx.message.text.trim().split(/\s+/);
 
@@ -100,6 +104,40 @@ async function sendUpcomingEvents(ctx) {
   }
 
   await ctx.reply(['Upcoming events:', ...lines].join('\n\n'), mainMenuKeyboard());
+}
+
+async function sendEventDebug(ctx) {
+  const user = await userService.getByTelegramId(ctx.from.id);
+  const groups = await groupService.listGroupsForUser(user.id);
+  const now = new Date();
+
+  if (groups.length === 0) {
+    await ctx.reply(`Server time: ${now.toISOString()}\nNo groups found.`, mainMenuKeyboard());
+    return;
+  }
+
+  const events = await eventService.listStartedEventsForGroups(groups.map((group) => group.id));
+
+  if (events.length === 0) {
+    await ctx.reply(
+      [
+        `Server time: ${now.toISOString()}`,
+        '',
+        'No started events found in your groups.'
+      ].join('\n'),
+      mainMenuKeyboard()
+    );
+    return;
+  }
+
+  const lines = events.map((event) => [
+    `${event.title} (${event.groups?.name || 'Unknown group'})`,
+    `starts_at: ${event.starts_at}`,
+    `start_notified: ${event.start_notified}`,
+    `status: ${event.status}`
+  ].join('\n'));
+
+  await ctx.reply([`Server time: ${now.toISOString()}`, ...lines].join('\n\n'), mainMenuKeyboard());
 }
 
 async function handleCreateEventFlow(ctx, flow) {
