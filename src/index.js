@@ -14,16 +14,14 @@ if (missingEnv.length > 0) {
 const bot = createBot();
 let stopEventStartNotifier = null;
 
-bot.launch()
-  .then(() => {
-    console.log('ReadyUpBot polling started.');
-    stopEventStartNotifier = startEventStartNotifier(bot);
-    console.log('ReadyUpBot is running.');
-  })
-  .catch((error) => {
-    console.error('Failed to launch ReadyUpBot:', error);
-    process.exit(1);
-  });
+bot.launch({}, () => {
+  console.log('ReadyUpBot launch callback fired.');
+  startNotifierOnce();
+  console.log('ReadyUpBot is running.');
+}).catch((error) => {
+  console.error('Failed to launch ReadyUpBot:', error);
+  process.exit(1);
+});
 
 process.once('SIGINT', () => stopBot('SIGINT'));
 process.once('SIGTERM', () => stopBot('SIGTERM'));
@@ -34,4 +32,12 @@ function stopBot(signal) {
   }
 
   bot.stop(signal);
+}
+
+function startNotifierOnce() {
+  if (stopEventStartNotifier) {
+    return;
+  }
+
+  stopEventStartNotifier = startEventStartNotifier(bot);
 }
