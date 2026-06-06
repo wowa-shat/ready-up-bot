@@ -36,6 +36,17 @@ async function getEventById(eventId) {
   return data;
 }
 
+async function deleteEvent(eventId) {
+  const { error } = await supabase
+    .from('events')
+    .delete()
+    .eq('id', eventId);
+
+  if (error) {
+    throw error;
+  }
+}
+
 async function listEventsDueForStartNotification() {
   const { data, error } = await supabase
     .from('events')
@@ -124,21 +135,6 @@ async function listUpcomingEventsForGroups(groupIds) {
   return data;
 }
 
-async function markStartNotified(eventId) {
-  const { data, error } = await supabase
-    .from('events')
-    .update({ start_notified: true })
-    .eq('id', eventId)
-    .select()
-    .single();
-
-  if (error) {
-    throw error;
-  }
-
-  return data;
-}
-
 async function recomputeEventStatus(eventId) {
   const event = await getEventById(eventId);
   const responses = await listEventResponses(eventId);
@@ -179,12 +175,12 @@ async function setCreatorStatusMessage(eventId, chatId, messageId) {
 
 module.exports = {
   createEvent,
+  deleteEvent,
   getEventById,
   isUserEventMember,
   listEventsDueForStartNotification,
   listEventResponses,
   listUpcomingEventsForGroups,
-  markStartNotified,
   recomputeEventStatus,
   setCreatorStatusMessage,
   upsertResponse

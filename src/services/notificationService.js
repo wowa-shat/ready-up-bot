@@ -66,8 +66,8 @@ async function notifyStartedEvents(bot) {
     );
 
     if (sentCount > 0 || members.length === 0) {
-      await eventService.markStartNotified(event.id);
-      console.log(`[event-notifier] marked notified event=${event.id}`);
+      await eventService.deleteEvent(event.id);
+      console.log(`[event-notifier] deleted past event=${event.id}`);
     }
   }
 }

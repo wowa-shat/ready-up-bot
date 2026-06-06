@@ -71,7 +71,7 @@ New projects can run `src/db/schema.sql` directly.
 
 When an event is created, group members receive inline buttons for `Going`, `Maybe`, and `No`. Each response is upserted in `event_responses`. After each response, the event status is recomputed and marked `full` once the Going count reaches `required_players`. The creator receives a live status message with Going, Maybe, and No lists.
 
-The bot checks for started events every 30 seconds. When an event start time has passed, it sends a start notification to group members and marks the event as notified. Railway logs include `[event-notifier]` lines for startup, due event count, send results, and marked notifications.
+The bot checks for started events every 30 seconds. When an event start time has passed, it sends a start notification to group members and deletes the past event from the database. Related responses are deleted by cascade rules. Railway logs include `[event-notifier]` lines for startup, due event count, send results, and deleted past events.
 
 ## Deployment
 
