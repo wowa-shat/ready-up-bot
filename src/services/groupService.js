@@ -1,9 +1,11 @@
 const { supabase } = require('../db/supabase');
+const { randomBytes } = require('crypto');
 
 async function createGroup(name, creatorId) {
+  const inviteToken = await createUniqueInviteToken();
   const { data: group, error } = await supabase
     .from('groups')
-    .insert({ name, creator_id: creatorId })
+    .insert({ name, creator_id: creatorId, invite_token: inviteToken })
     .select()
     .single();
 
@@ -13,6 +15,19 @@ async function createGroup(name, creatorId) {
 
   await addMember(group.id, creatorId);
   return group;
+}
+
+async function createUniqueInviteToken() {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const token = randomBytes(6).toString('base64url');
+    const existing = await getGroupByInviteToken(token);
+
+    if (!existing) {
+      return token;
+    }
+  }
+
+  throw new Error('Failed to create a unique invite token.');
 }
 
 async function addMember(groupId, userId) {
@@ -35,6 +50,20 @@ async function getGroupForAdmin(groupId, userId) {
     .select('*')
     .eq('id', groupId)
     .eq('creator_id', userId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+async function getGroupByInviteToken(inviteToken) {
+  const { data, error } = await supabase
+    .from('groups')
+    .select('*')
+    .eq('invite_token', inviteToken)
     .maybeSingle();
 
   if (error) {
@@ -111,6 +140,7 @@ module.exports = {
   addMember,
   createGroup,
   deleteGroupForAdmin,
+  getGroupByInviteToken,
   getGroupForAdmin,
   getGroupForMember,
   listGroupMembers,

@@ -16,9 +16,8 @@ function createBot() {
     { command: 'menu', description: 'Show action buttons' },
     { command: 'creategroup', description: 'Create a group' },
     { command: 'groups', description: 'List your groups' },
-    { command: 'addmember', description: 'Add a member to a group' },
     { command: 'newevent', description: 'Create an event' },
-    { command: 'myid', description: 'Show your Telegram numeric ID' }
+    { command: 'events', description: 'Show upcoming events' }
   ]).catch((error) => {
     console.error('Failed to set bot commands:', error.message);
   });

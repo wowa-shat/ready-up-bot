@@ -3,16 +3,15 @@ const { Markup } = require('telegraf');
 const menuLabels = {
   createGroup: 'Create group',
   listGroups: 'My groups',
-  addMember: 'Add member',
   createEvent: 'Create event',
-  myId: 'My Telegram ID'
+  upcomingEvents: 'Upcoming events'
 };
 
 function mainMenuKeyboard() {
   return Markup.keyboard([
     [menuLabels.createGroup, menuLabels.listGroups],
-    [menuLabels.addMember, menuLabels.createEvent],
-    [menuLabels.myId]
+    [menuLabels.createEvent],
+    [menuLabels.upcomingEvents]
   ]).resize();
 }
 
@@ -24,14 +23,16 @@ function groupSelectionKeyboard(groups, action) {
   );
 }
 
-function groupActionsKeyboard(groupId) {
+function groupActionsKeyboard(groupId, shareUrl) {
   return Markup.inlineKeyboard([
     [
-      Markup.button.callback('Add member', `group:add:${groupId}`),
-      Markup.button.callback('Create event', `event:group:${groupId}`)
+      Markup.button.callback('📅 Create event', `event:group:${groupId}`)
     ],
     [
-      Markup.button.callback('Delete group', `group:delete:${groupId}`)
+      Markup.button.url('📨 Share Invite Link', shareUrl)
+    ],
+    [
+      Markup.button.callback('🗑 Delete group', `group:delete:${groupId}`)
     ]
   ]);
 }
@@ -39,23 +40,14 @@ function groupActionsKeyboard(groupId) {
 function confirmDeleteGroupKeyboard(groupId) {
   return Markup.inlineKeyboard([
     [
-      Markup.button.callback('Yes, delete', `group:delete_confirm:${groupId}`),
+      Markup.button.callback('🗑 Yes, delete', `group:delete_confirm:${groupId}`),
       Markup.button.callback('Cancel', `group:view:${groupId}`)
     ]
   ]);
 }
 
-function contactRequestKeyboard() {
-  return Markup.keyboard([
-    [Markup.button.contactRequest('Share my contact')],
-    [menuLabels.myId],
-    [menuLabels.listGroups, menuLabels.createEvent]
-  ]).resize();
-}
-
 module.exports = {
   confirmDeleteGroupKeyboard,
-  contactRequestKeyboard,
   groupActionsKeyboard,
   groupSelectionKeyboard,
   mainMenuKeyboard,

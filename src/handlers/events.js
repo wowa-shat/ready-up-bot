@@ -3,13 +3,21 @@ const { Markup } = require('telegraf');
 const eventService = require('../services/eventService');
 const groupService = require('../services/groupService');
 const userService = require('../services/userService');
-const { minutesFromNow } = require('../utils/time');
+const { formatDateTime, minutesFromNow } = require('../utils/time');
 const { formatEventInvite, formatCreatorStatus } = require('../utils/formatEvent');
-const { groupSelectionKeyboard, menuLabels } = require('../utils/keyboards');
+const { groupSelectionKeyboard, mainMenuKeyboard, menuLabels } = require('../utils/keyboards');
 
 function registerEventHandlers(bot) {
   bot.hears(menuLabels.createEvent, async (ctx) => {
     await startCreateEvent(ctx);
+  });
+
+  bot.hears(menuLabels.upcomingEvents, async (ctx) => {
+    await sendUpcomingEvents(ctx);
+  });
+
+  bot.command('events', async (ctx) => {
+    await sendUpcomingEvents(ctx);
   });
 
   bot.command('newevent', async (ctx) => {
@@ -66,6 +74,34 @@ async function startCreateEvent(ctx) {
 
   ctx.session.flow = { type: 'create_event', step: 'select_group' };
   await ctx.reply('Choose a group for this event:', groupSelectionKeyboard(groups, 'event:group'));
+}
+
+async function sendUpcomingEvents(ctx) {
+  const user = await userService.getByTelegramId(ctx.from.id);
+  const groups = await groupService.listGroupsForUser(user.id);
+
+  if (groups.length === 0) {
+    await ctx.reply('You are not a member of any groups yet.', mainMenuKeyboard());
+    return;
+  }
+
+  const events = await eventService.listUpcomingEventsForGroups(groups.map((group) => group.id));
+
+  if (events.length === 0) {
+    await ctx.reply('No upcoming events yet.', mainMenuKeyboard());
+    return;
+  }
+
+  const lines = events.map((event) => [
+    event.title,
+    `Group: ${event.groups?.name || 'Unknown group'}`,
+    `Starts: ${formatDateTime(event.starts_at)}`,
+    `Required players: ${event.required_players}`,
+    `Status: ${event.status}`,
+    event.description ? `Description: ${event.description}` : null
+  ].filter(Boolean).join('\n'));
+
+  await ctx.reply(['Upcoming events:', ...lines].join('\n\n'), mainMenuKeyboard());
 }
 
 async function handleCreateEventFlow(ctx, flow) {

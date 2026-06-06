@@ -88,6 +88,25 @@ async function listEventResponses(eventId) {
   return data;
 }
 
+async function listUpcomingEventsForGroups(groupIds) {
+  if (groupIds.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('events')
+    .select('*, groups(name)')
+    .in('group_id', groupIds)
+    .gte('starts_at', new Date().toISOString())
+    .order('starts_at', { ascending: true });
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
 async function recomputeEventStatus(eventId) {
   const event = await getEventById(eventId);
   const responses = await listEventResponses(eventId);
@@ -131,6 +150,7 @@ module.exports = {
   getEventById,
   isUserEventMember,
   listEventResponses,
+  listUpcomingEventsForGroups,
   recomputeEventStatus,
   setCreatorStatusMessage,
   upsertResponse

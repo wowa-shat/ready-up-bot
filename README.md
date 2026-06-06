@@ -55,17 +55,19 @@ Available commands:
 - `/menu` shows the persistent action buttons.
 - `/creategroup` starts the group creation flow.
 - `/groups` lists groups you belong to.
-- `/addmember` starts a flow to add a member by Telegram numeric ID.
-- `/addmember <group_id> <telegram_id>` adds a member directly.
 - `/newevent` starts the event creation flow.
 - `/newevent <group_id>` starts event creation for a specific group.
-- `/myid` shows your Telegram numeric ID for fallback member invites.
+- `/events` shows upcoming events that have not started yet.
 
-The main menu also provides buttons for creating groups, listing groups, adding members, creating events, and showing your Telegram ID. Group lists are shown as inline buttons; selecting a group opens group actions.
+The main menu also provides buttons for creating groups, listing groups, creating events, and showing upcoming events. Group lists are shown as inline buttons; selecting a group opens group actions.
 
 Group creators can delete a group from the group actions screen. Deleting a group also deletes its members, events, and responses through database cascade rules.
 
-Members must use `/start` before they can be added. The add-member flow asks the group creator to choose a group, then send a Telegram contact or a numeric Telegram ID. Telegram only includes a usable `user_id` for some shared contacts, so `/myid` remains the reliable fallback.
+The group actions screen has a vertical action column: `Create event`, `Share Invite Link`, and `Delete group`.
+
+`Share Invite Link` opens Telegram's share dialog. The shared message is formatted as a group invitation with the group name, creator, and invite link. The link looks like `https://t.me/ReadyUpBot?start=join_XYZ123`. When a friend opens it, the bot registers them and adds them to the group.
+
+If your database already existed before invite links were added, run `src/db/migrations/001_add_group_invite_token.sql` in Supabase SQL Editor. New projects can run `src/db/schema.sql` directly.
 
 When an event is created, group members receive inline buttons for `Going`, `Maybe`, and `No`. Each response is upserted in `event_responses`. After each response, the event status is recomputed and marked `full` once the Going count reaches `required_players`. The creator receives a live status message with Going, Maybe, and No lists.
 

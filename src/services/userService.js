@@ -36,7 +36,22 @@ async function getByTelegramId(telegramId) {
   return data;
 }
 
+async function getById(id) {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
 module.exports = {
+  getById,
   getByTelegramId,
   upsertTelegramUser
 };
