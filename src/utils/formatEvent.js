@@ -1,19 +1,39 @@
 const { formatDateTime } = require('./time');
 
-function formatEventInvite(event, group) {
+function formatEventStatus(event, responses = [], groupName = null) {
+  const grouped = groupResponses(responses);
+
   return [
-    `Ready up for ${group.name}`,
+    `Group Name: ${groupName || event.groups?.name || 'Unknown group'}`,
     '',
-    event.title,
-    event.description || '',
+    `Event Name: ${event.title}`,
+    `Event Description: ${event.description || '-'}`,
     '',
     `Starts: ${formatDateTime(event.starts_at)}`,
     `Required players: ${event.required_players}`,
-    `Status: ${event.status}`
-  ].filter(Boolean).join('\n');
+    '',
+    '',
+    `Going (${grouped.going.length}): ${listNames(grouped.going)}`,
+    `Maybe (${grouped.maybe.length}): ${listNames(grouped.maybe)}`,
+    `No (${grouped.no.length}): ${listNames(grouped.no)}`
+  ].join('\n');
 }
 
-function formatCreatorStatus(event, responses) {
+function formatEventStarted(event, groupName = null) {
+  return [
+    `⏰ Event started`,
+    '',
+    `Group Name: ${groupName || event.groups?.name || 'Unknown group'}`,
+    '',
+    `Event Name: ${event.title}`,
+    `Event Description: ${event.description || '-'}`,
+    '',
+    `Starts: ${formatDateTime(event.starts_at)}`,
+    `Required players: ${event.required_players}`
+  ].join('\n');
+}
+
+function groupResponses(responses) {
   const grouped = {
     going: [],
     maybe: [],
@@ -26,16 +46,7 @@ function formatCreatorStatus(event, responses) {
     grouped[response.status].push(label);
   }
 
-  return [
-    `Event status: ${event.title}`,
-    `Starts: ${formatDateTime(event.starts_at)}`,
-    `Required players: ${event.required_players}`,
-    `Status: ${event.status}`,
-    '',
-    `Going (${grouped.going.length}): ${listNames(grouped.going)}`,
-    `Maybe (${grouped.maybe.length}): ${listNames(grouped.maybe)}`,
-    `No (${grouped.no.length}): ${listNames(grouped.no)}`
-  ].join('\n');
+  return grouped;
 }
 
 function userLabel(user) {
@@ -51,6 +62,6 @@ function listNames(names) {
 }
 
 module.exports = {
-  formatCreatorStatus,
-  formatEventInvite
+  formatEventStarted,
+  formatEventStatus
 };

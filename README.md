@@ -67,9 +67,11 @@ The group actions screen has a vertical action column: `Create event`, `Share In
 
 `Share Invite Link` opens Telegram's share dialog. The shared message is formatted as a group invitation with the group name, creator, and invite link. The link looks like `https://t.me/ReadyUpBot?start=join_XYZ123`. When a friend opens it, the bot registers them and adds them to the group.
 
-If your database already existed before invite links were added, run `src/db/migrations/001_add_group_invite_token.sql` in Supabase SQL Editor. New projects can run `src/db/schema.sql` directly.
+New projects can run `src/db/schema.sql` directly.
 
 When an event is created, group members receive inline buttons for `Going`, `Maybe`, and `No`. Each response is upserted in `event_responses`. After each response, the event status is recomputed and marked `full` once the Going count reaches `required_players`. The creator receives a live status message with Going, Maybe, and No lists.
+
+The bot checks for started events every minute. When an event start time has passed, it sends a start notification to group members and marks the event as notified.
 
 ## Deployment
 

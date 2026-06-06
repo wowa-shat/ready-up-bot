@@ -1,6 +1,6 @@
 const eventService = require('../services/eventService');
 const userService = require('../services/userService');
-const { formatCreatorStatus } = require('../utils/formatEvent');
+const { formatEventStatus } = require('../utils/formatEvent');
 
 function registerResponseHandlers(bot) {
   bot.action(/^response:([0-9a-f-]+):(going|maybe|no)$/i, async (ctx) => {
@@ -40,7 +40,7 @@ async function updateCreator(ctx, event) {
   }
 
   const responses = await eventService.listEventResponses(event.id);
-  const text = formatCreatorStatus(event, responses);
+  const text = formatEventStatus(event, responses);
 
   if (event.creator_status_message_id) {
     try {

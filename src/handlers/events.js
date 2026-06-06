@@ -3,8 +3,8 @@ const { Markup } = require('telegraf');
 const eventService = require('../services/eventService');
 const groupService = require('../services/groupService');
 const userService = require('../services/userService');
-const { formatDateTime, minutesFromNow } = require('../utils/time');
-const { formatEventInvite, formatCreatorStatus } = require('../utils/formatEvent');
+const { minutesFromNow } = require('../utils/time');
+const { formatEventStatus } = require('../utils/formatEvent');
 const { groupSelectionKeyboard, mainMenuKeyboard, menuLabels } = require('../utils/keyboards');
 
 function registerEventHandlers(bot) {
@@ -92,14 +92,12 @@ async function sendUpcomingEvents(ctx) {
     return;
   }
 
-  const lines = events.map((event) => [
-    event.title,
-    `Group: ${event.groups?.name || 'Unknown group'}`,
-    `Starts: ${formatDateTime(event.starts_at)}`,
-    `Required players: ${event.required_players}`,
-    `Status: ${event.status}`,
-    event.description ? `Description: ${event.description}` : null
-  ].filter(Boolean).join('\n'));
+  const lines = [];
+
+  for (const event of events) {
+    const responses = await eventService.listEventResponses(event.id);
+    lines.push(formatEventStatus(event, responses));
+  }
 
   await ctx.reply(['Upcoming events:', ...lines].join('\n\n'), mainMenuKeyboard());
 }
@@ -174,7 +172,7 @@ async function createEvent(ctx, flow) {
     requiredPlayers: flow.requiredPlayers
   });
 
-  const inviteText = formatEventInvite(event, group);
+  const inviteText = formatEventStatus(event, [], group.name);
   const keyboard = Markup.inlineKeyboard([
     [
       Markup.button.callback('Going', `response:${event.id}:going`),
@@ -200,7 +198,7 @@ async function createEvent(ctx, flow) {
 
   const statusMessage = await ctx.telegram.sendMessage(
     ctx.from.id,
-    formatCreatorStatus({ ...event, responses: [] }, [])
+    formatEventStatus(event, [], group.name)
   );
   await eventService.setCreatorStatusMessage(event.id, ctx.from.id, statusMessage.message_id);
 

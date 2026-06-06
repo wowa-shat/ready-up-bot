@@ -25,9 +25,26 @@ async function createEvent({ groupId, creatorId, title, description, startsAt, r
 async function getEventById(eventId) {
   const { data, error } = await supabase
     .from('events')
-    .select('*')
+    .select('*, groups(name)')
     .eq('id', eventId)
     .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+async function listEventsDueForStartNotification() {
+  const { data, error } = await supabase
+    .from('events')
+    .select('*, groups(name)')
+    .lte('starts_at', new Date().toISOString())
+    .eq('start_notified', false)
+    .neq('status', 'cancelled')
+    .order('starts_at', { ascending: true })
+    .limit(25);
 
   if (error) {
     throw error;
@@ -107,6 +124,21 @@ async function listUpcomingEventsForGroups(groupIds) {
   return data;
 }
 
+async function markStartNotified(eventId) {
+  const { data, error } = await supabase
+    .from('events')
+    .update({ start_notified: true })
+    .eq('id', eventId)
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
 async function recomputeEventStatus(eventId) {
   const event = await getEventById(eventId);
   const responses = await listEventResponses(eventId);
@@ -117,7 +149,7 @@ async function recomputeEventStatus(eventId) {
     .from('events')
     .update({ status })
     .eq('id', eventId)
-    .select()
+    .select('*, groups(name)')
     .single();
 
   if (error) {
@@ -149,8 +181,10 @@ module.exports = {
   createEvent,
   getEventById,
   isUserEventMember,
+  listEventsDueForStartNotification,
   listEventResponses,
   listUpcomingEventsForGroups,
+  markStartNotified,
   recomputeEventStatus,
   setCreatorStatusMessage,
   upsertResponse
