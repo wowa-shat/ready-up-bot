@@ -49,6 +49,16 @@ function groupActionsKeyboard(groupId, shareUrl) {
   ]);
 }
 
+function eventResponseKeyboard(eventId) {
+  return Markup.inlineKeyboard([
+    [
+      Markup.button.callback('Going', `response:${eventId}:going`),
+      Markup.button.callback('Maybe', `response:${eventId}:maybe`),
+      Markup.button.callback('No', `response:${eventId}:no`)
+    ]
+  ]);
+}
+
 function confirmDeleteGroupKeyboard(groupId) {
   return Markup.inlineKeyboard([
     [
@@ -60,6 +70,7 @@ function confirmDeleteGroupKeyboard(groupId) {
 
 module.exports = {
   confirmDeleteGroupKeyboard,
+  eventResponseKeyboard,
   groupActionsKeyboard,
   groupSelectionKeyboard,
   isMainMenuLabel,

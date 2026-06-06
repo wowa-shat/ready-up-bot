@@ -1,11 +1,15 @@
-const { Markup } = require('telegraf');
-
 const eventService = require('../services/eventService');
 const groupService = require('../services/groupService');
 const userService = require('../services/userService');
 const { minutesFromNow } = require('../utils/time');
 const { formatEventStatus } = require('../utils/formatEvent');
-const { groupSelectionKeyboard, isNavigationText, mainMenuKeyboard, menuLabels } = require('../utils/keyboards');
+const {
+  eventResponseKeyboard,
+  groupSelectionKeyboard,
+  isNavigationText,
+  mainMenuKeyboard,
+  menuLabels
+} = require('../utils/keyboards');
 
 function registerEventHandlers(bot) {
   bot.hears(menuLabels.createEvent, async (ctx) => {
@@ -180,16 +184,11 @@ async function createEvent(ctx, flow) {
   });
 
   const inviteText = formatEventStatus(event, [], group.name);
-  const keyboard = Markup.inlineKeyboard([
-    [
-      Markup.button.callback('Going', `response:${event.id}:going`),
-      Markup.button.callback('Maybe', `response:${event.id}:maybe`),
-      Markup.button.callback('No', `response:${event.id}:no`)
-    ]
-  ]);
+  const keyboard = eventResponseKeyboard(event.id);
 
   const members = await groupService.listGroupMembers(group.id);
   const recipients = members.map((member) => member.users).filter(Boolean);
+  let creatorStatusMessage = null;
 
   for (const member of recipients) {
     if (!member.telegram_id) {
@@ -197,17 +196,19 @@ async function createEvent(ctx, flow) {
     }
 
     try {
-      await ctx.telegram.sendMessage(member.telegram_id, inviteText, keyboard);
+      const sentMessage = await ctx.telegram.sendMessage(member.telegram_id, inviteText, keyboard);
+
+      if (member.id === creator.id) {
+        creatorStatusMessage = sentMessage;
+      }
     } catch (error) {
       console.error(`Failed to send event ${event.id} to ${member.telegram_id}:`, error.message);
     }
   }
 
-  const statusMessage = await ctx.telegram.sendMessage(
-    ctx.from.id,
-    formatEventStatus(event, [], group.name)
-  );
-  await eventService.setCreatorStatusMessage(event.id, ctx.from.id, statusMessage.message_id);
+  if (creatorStatusMessage) {
+    await eventService.setCreatorStatusMessage(event.id, ctx.from.id, creatorStatusMessage.message_id);
+  }
 
   ctx.session.flow = null;
   await ctx.reply(`Event created for ${group.name}. Invites sent to ${recipients.length} members.`);

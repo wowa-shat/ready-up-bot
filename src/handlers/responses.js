@@ -1,6 +1,7 @@
 const eventService = require('../services/eventService');
 const userService = require('../services/userService');
 const { formatEventStatus } = require('../utils/formatEvent');
+const { eventResponseKeyboard } = require('../utils/keyboards');
 
 function registerResponseHandlers(bot) {
   bot.action(/^response:([0-9a-f-]+):(going|maybe|no)$/i, async (ctx) => {
@@ -48,7 +49,8 @@ async function updateCreator(ctx, event) {
         event.creator_status_chat_id,
         event.creator_status_message_id,
         undefined,
-        text
+        text,
+        eventResponseKeyboard(event.id)
       );
       return;
     } catch (error) {
