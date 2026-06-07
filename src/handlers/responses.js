@@ -1,7 +1,6 @@
 const eventService = require('../services/eventService');
+const eventStatusMessageService = require('../services/eventStatusMessageService');
 const userService = require('../services/userService');
-const { formatEventStatus } = require('../utils/formatEvent');
-const { eventResponseKeyboard } = require('../utils/keyboards');
 
 function registerResponseHandlers(bot) {
   bot.action(/^response:([0-9a-f-]+):(going|maybe|no)$/i, async (ctx) => {
@@ -29,36 +28,9 @@ function registerResponseHandlers(bot) {
 
     await eventService.upsertResponse(eventId, user.id, status);
     const refreshedEvent = await eventService.recomputeEventStatus(eventId);
-    await updateCreator(ctx, refreshedEvent);
-
     await ctx.answerCbQuery(`Saved: ${status}`);
+    await eventStatusMessageService.replaceEventStatusMessagesForGroup(ctx, refreshedEvent);
   });
-}
-
-async function updateCreator(ctx, event) {
-  if (!event.creator_status_chat_id) {
-    return;
-  }
-
-  const responses = await eventService.listEventResponses(event.id);
-  const text = formatEventStatus(event, responses);
-
-  if (event.creator_status_message_id) {
-    try {
-      await ctx.telegram.editMessageText(
-        event.creator_status_chat_id,
-        event.creator_status_message_id,
-        undefined,
-        text,
-        eventResponseKeyboard(event.id)
-      );
-      return;
-    } catch (error) {
-      console.error(`Failed to edit creator status for event ${event.id}:`, error.message);
-    }
-  }
-
-  await ctx.telegram.sendMessage(event.creator_status_chat_id, text);
 }
 
 module.exports = { registerResponseHandlers };

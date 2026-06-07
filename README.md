@@ -27,9 +27,9 @@ For local development, an anon key can work if your Supabase policies allow the 
 2. Open the SQL Editor.
 3. Paste and run `src/db/schema.sql`.
 4. Confirm these tables were created:
-   `users`, `groups`, `group_members`, `events`, and `event_responses`.
+   `users`, `groups`, `group_members`, `events`, `event_responses`, and `event_status_messages`.
 
-`schema.sql` is a clean MVP reset script: it drops and recreates these five bot tables before creating the schema. Do not run it against production data unless you intend to reset the bot database.
+`schema.sql` is a clean MVP reset script: it drops and recreates these bot tables before creating the schema. Do not run it against production data unless you intend to reset the bot database.
 
 ## Running Locally
 
@@ -69,7 +69,7 @@ The group actions screen has a vertical action column: `Create event`, `Share In
 
 New projects can run `src/db/schema.sql` directly.
 
-When an event is created, group members receive inline buttons for `Going`, `Maybe`, and `No`. Each response is upserted in `event_responses`. After each response, the event status is recomputed and marked `full` once the Going count reaches `required_players`. The creator receives a live status message with Going, Maybe, and No lists.
+When an event is created, group members receive one event status message with inline buttons for `Going`, `Maybe`, and `No`. Each response is upserted in `event_responses`. After each response, the event status is recomputed and marked `full` once the Going count reaches `required_players`. The bot deletes each member's previous event status message and sends a fresh one with updated Going, Maybe, and No lists plus the response buttons.
 
 The bot checks for started events every 30 seconds. When an event start time has passed, it sends a start notification to group members and deletes the past event from the database. Related responses are deleted by cascade rules. Railway logs include `[event-notifier]` lines for startup, due event count, send results, and deleted past events.
 

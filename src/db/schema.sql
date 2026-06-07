@@ -1,6 +1,7 @@
 create extension if not exists "pgcrypto";
 
 drop table if exists public.event_responses cascade;
+drop table if exists public.event_status_messages cascade;
 drop table if exists public.events cascade;
 drop table if exists public.group_members cascade;
 drop table if exists public.groups cascade;
@@ -59,6 +60,17 @@ create table if not exists public.event_responses (
   unique (event_id, user_id)
 );
 
+create table if not exists public.event_status_messages (
+  id uuid primary key default gen_random_uuid(),
+  event_id uuid not null references public.events(id) on delete cascade,
+  user_id uuid not null references public.users(id) on delete cascade,
+  chat_id bigint not null,
+  message_id bigint not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (event_id, user_id)
+);
+
 create or replace function public.set_updated_at()
 returns trigger as $$
 begin
@@ -87,6 +99,12 @@ create trigger event_responses_set_updated_at
 before update on public.event_responses
 for each row execute function public.set_updated_at();
 
+drop trigger if exists event_status_messages_set_updated_at on public.event_status_messages;
+create trigger event_status_messages_set_updated_at
+before update on public.event_status_messages
+for each row execute function public.set_updated_at();
+
 create index if not exists group_members_user_id_idx on public.group_members(user_id);
 create index if not exists events_group_id_idx on public.events(group_id);
 create index if not exists event_responses_event_id_idx on public.event_responses(event_id);
+create index if not exists event_status_messages_event_id_idx on public.event_status_messages(event_id);

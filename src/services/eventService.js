@@ -116,6 +116,53 @@ async function listEventResponses(eventId) {
   return data;
 }
 
+async function listEventStatusMessages(eventId) {
+  const { data, error } = await supabase
+    .from('event_status_messages')
+    .select('*')
+    .eq('event_id', eventId);
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+async function upsertEventStatusMessage(eventId, userId, chatId, messageId) {
+  const { data, error } = await supabase
+    .from('event_status_messages')
+    .upsert(
+      {
+        event_id: eventId,
+        user_id: userId,
+        chat_id: chatId,
+        message_id: messageId
+      },
+      { onConflict: 'event_id,user_id' }
+    )
+    .select()
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
+async function deleteEventStatusMessage(eventId, userId) {
+  const { error } = await supabase
+    .from('event_status_messages')
+    .delete()
+    .eq('event_id', eventId)
+    .eq('user_id', userId);
+
+  if (error) {
+    throw error;
+  }
+}
+
 async function listUpcomingEventsForGroups(groupIds) {
   if (groupIds.length === 0) {
     return [];
@@ -178,10 +225,13 @@ module.exports = {
   deleteEvent,
   getEventById,
   isUserEventMember,
+  deleteEventStatusMessage,
   listEventsDueForStartNotification,
   listEventResponses,
+  listEventStatusMessages,
   listUpcomingEventsForGroups,
   recomputeEventStatus,
   setCreatorStatusMessage,
+  upsertEventStatusMessage,
   upsertResponse
 };

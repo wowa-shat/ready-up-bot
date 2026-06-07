@@ -1,10 +1,9 @@
 const eventService = require('../services/eventService');
+const eventStatusMessageService = require('../services/eventStatusMessageService');
 const groupService = require('../services/groupService');
 const userService = require('../services/userService');
 const { minutesFromNow } = require('../utils/time');
-const { formatEventStatus } = require('../utils/formatEvent');
 const {
-  eventResponseKeyboard,
   groupSelectionKeyboard,
   isNavigationText,
   mainMenuKeyboard,
@@ -103,14 +102,12 @@ async function sendUpcomingEvents(ctx) {
     return;
   }
 
-  const lines = [];
-
   for (const event of events) {
     const responses = await eventService.listEventResponses(event.id);
-    lines.push(formatEventStatus(event, responses));
+    await eventStatusMessageService.replaceEventStatusMessage(ctx, event, user, responses);
   }
 
-  await ctx.reply(['Upcoming events:', ...lines].join('\n\n'), mainMenuKeyboard());
+  await ctx.reply('Upcoming events refreshed.', mainMenuKeyboard());
 }
 
 async function handleCreateEventFlow(ctx, flow) {
@@ -183,12 +180,8 @@ async function createEvent(ctx, flow) {
     requiredPlayers: flow.requiredPlayers
   });
 
-  const inviteText = formatEventStatus(event, [], group.name);
-  const keyboard = eventResponseKeyboard(event.id);
-
   const members = await groupService.listGroupMembers(group.id);
   const recipients = members.map((member) => member.users).filter(Boolean);
-  let creatorStatusMessage = null;
 
   for (const member of recipients) {
     if (!member.telegram_id) {
@@ -196,18 +189,10 @@ async function createEvent(ctx, flow) {
     }
 
     try {
-      const sentMessage = await ctx.telegram.sendMessage(member.telegram_id, inviteText, keyboard);
-
-      if (member.id === creator.id) {
-        creatorStatusMessage = sentMessage;
-      }
+      await eventStatusMessageService.sendEventStatusMessage(ctx, event, member, [], group.name);
     } catch (error) {
       console.error(`Failed to send event ${event.id} to ${member.telegram_id}:`, error.message);
     }
-  }
-
-  if (creatorStatusMessage) {
-    await eventService.setCreatorStatusMessage(event.id, ctx.from.id, creatorStatusMessage.message_id);
   }
 
   ctx.session.flow = null;
