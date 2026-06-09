@@ -7,7 +7,8 @@ const {
   groupSelectionKeyboard,
   isNavigationText,
   mainMenuKeyboard,
-  menuLabels
+  menuLabels,
+  skipKeyboard
 } = require('../utils/keyboards');
 
 function registerEventHandlers(bot) {
@@ -55,6 +56,33 @@ function registerEventHandlers(bot) {
     ctx.session.flow = { type: 'create_event', step: 'title', groupId };
     await ctx.reply(`Creating event for ${group.name}. Send the event title.`);
     await ctx.answerCbQuery();
+  });
+
+  bot.action('event:skip:description', async (ctx) => {
+    const flow = ctx.session.flow;
+
+    if (!flow || flow.type !== 'create_event' || flow.step !== 'description') {
+      await ctx.answerCbQuery('Not available.');
+      return;
+    }
+
+    ctx.session.flow = { ...flow, step: 'start_minutes', description: null };
+    await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
+    await ctx.reply('Starts in how many minutes? Send a number, for example 30.');
+    await ctx.answerCbQuery('Skipped description');
+  });
+
+  bot.action('event:skip:required_players', async (ctx) => {
+    const flow = ctx.session.flow;
+
+    if (!flow || flow.type !== 'create_event' || flow.step !== 'required_players') {
+      await ctx.answerCbQuery('Not available.');
+      return;
+    }
+
+    await ctx.editMessageReplyMarkup({ inline_keyboard: [] });
+    await ctx.answerCbQuery('Skipped required players');
+    await createEvent(ctx, { ...flow, requiredPlayers: null });
   });
 
   bot.on('text', async (ctx, next) => {
@@ -126,7 +154,7 @@ async function handleCreateEventFlow(ctx, flow) {
 
   if (flow.step === 'title') {
     ctx.session.flow = { ...flow, step: 'description', title: text };
-    await ctx.reply('Send the event description.');
+    await ctx.reply('Send the event description (or skip it).', skipKeyboard('event:skip:description'));
     return;
   }
 
@@ -145,7 +173,7 @@ async function handleCreateEventFlow(ctx, flow) {
     }
 
     ctx.session.flow = { ...flow, step: 'required_players', startMinutes: minutes };
-    await ctx.reply('How many Going responses are required?');
+    await ctx.reply('How many Going responses are required? (or skip it)', skipKeyboard('event:skip:required_players'));
     return;
   }
 

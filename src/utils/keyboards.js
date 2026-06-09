@@ -68,6 +68,12 @@ function confirmDeleteGroupKeyboard(groupId) {
   ]);
 }
 
+function skipKeyboard(skipAction) {
+  return Markup.inlineKeyboard([
+    [Markup.button.callback('⏭ Skip', skipAction)]
+  ]);
+}
+
 module.exports = {
   confirmDeleteGroupKeyboard,
   eventResponseKeyboard,
@@ -76,5 +82,6 @@ module.exports = {
   isMainMenuLabel,
   isNavigationText,
   mainMenuKeyboard,
-  menuLabels
+  menuLabels,
+  skipKeyboard
 };

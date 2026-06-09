@@ -186,7 +186,7 @@ async function recomputeEventStatus(eventId) {
   const event = await getEventById(eventId);
   const responses = await listEventResponses(eventId);
   const goingCount = responses.filter((response) => response.status === 'going').length;
-  const status = goingCount >= event.required_players ? 'full' : 'open';
+  const status = event.required_players && goingCount >= event.required_players ? 'full' : 'open';
 
   const { data, error } = await supabase
     .from('events')

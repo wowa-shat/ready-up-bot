@@ -41,7 +41,7 @@ create table if not exists public.events (
   title text not null,
   description text,
   starts_at timestamptz not null,
-  required_players integer not null check (required_players > 0),
+  required_players integer,
   status text not null default 'open' check (status in ('open', 'full', 'cancelled')),
   start_notified boolean not null default false,
   creator_status_chat_id bigint,

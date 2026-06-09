@@ -10,7 +10,7 @@ function formatEventStatus(event, responses = [], groupName = null) {
     `Event Description: ${event.description || '-'}`,
     '',
     `Starts: ${formatRelativeTime(event.starts_at)}`,
-    `Required players: ${event.required_players}`,
+    `Required players: ${event.required_players || '-'}`,
     '',
     '',
     `Going (${grouped.going.length}): ${listNames(grouped.going)}`,
@@ -29,7 +29,7 @@ function formatEventStarted(event, groupName = null) {
     `Event Description: ${event.description || '-'}`,
     '',
     `Starts: ${formatRelativeTime(event.starts_at)}`,
-    `Required players: ${event.required_players}`
+    `Required players: ${event.required_players || '-'}`
   ].join('\n');
 }
 
