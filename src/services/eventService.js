@@ -188,6 +188,7 @@ async function listUpcomingEventsForGroups(groupIds) {
     .select('*, groups(name)')
     .in('group_id', groupIds)
     .gte('starts_at', new Date().toISOString())
+    .neq('status', 'cancelled')
     .order('starts_at', { ascending: true });
 
   if (error) {

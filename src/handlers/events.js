@@ -2,7 +2,7 @@ const eventService = require('../services/eventService');
 const eventStatusMessageService = require('../services/eventStatusMessageService');
 const groupService = require('../services/groupService');
 const userService = require('../services/userService');
-const { minutesFromNow, formatRelativeTime } = require('../utils/time');
+const { minutesFromNow } = require('../utils/time');
 const {
   groupSelectionKeyboard,
   isNavigationText,
@@ -152,8 +152,7 @@ async function notifyEventCancelled(ctx, event) {
         '',
         `Group: ${event.groups?.name || 'Unknown'}`,
         `Event: ${event.title}`,
-        event.description ? `Description: ${event.description}` : null,
-        `Starts: ${formatRelativeTime(event.starts_at)}`
+        event.description ? `Description: ${event.description}` : null
       ].filter(Boolean).join('\n');
 
       await ctx.telegram.sendMessage(member.telegram_id, text);
