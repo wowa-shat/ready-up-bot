@@ -2,7 +2,7 @@ const eventService = require('../services/eventService');
 const eventStatusMessageService = require('../services/eventStatusMessageService');
 const groupService = require('../services/groupService');
 const userService = require('../services/userService');
-const { minutesFromNow } = require('../utils/time');
+const { minutesFromNow, formatRelativeTime } = require('../utils/time');
 const {
   groupSelectionKeyboard,
   isNavigationText,
@@ -85,6 +85,31 @@ function registerEventHandlers(bot) {
     await createEvent(ctx, { ...flow, requiredPlayers: null });
   });
 
+  bot.action(/^event:cancel:([0-9a-f-]+)$/i, async (ctx) => {
+    const eventId = ctx.match[1];
+    const user = await userService.getByTelegramId(ctx.from.id);
+    const event = await eventService.getEventById(eventId);
+
+    if (!event) {
+      await ctx.answerCbQuery('Event not found.');
+      return;
+    }
+
+    if (event.creator_id !== user.id) {
+      await ctx.answerCbQuery('Only the creator can cancel this event.');
+      return;
+    }
+
+    if (event.status === 'cancelled') {
+      await ctx.answerCbQuery('Event is already cancelled.');
+      return;
+    }
+
+    const cancelledEvent = await eventService.cancelEvent(eventId);
+    await notifyEventCancelled(ctx, cancelledEvent);
+    await ctx.answerCbQuery('Event cancelled.');
+  });
+
   bot.on('text', async (ctx, next) => {
     const flow = ctx.session.flow;
 
@@ -99,6 +124,47 @@ function registerEventHandlers(bot) {
 
     await handleCreateEventFlow(ctx, flow);
   });
+}
+
+async function notifyEventCancelled(ctx, event) {
+  const members = await groupService.listGroupMembers(event.group_id);
+  const statusMessages = await eventService.listEventStatusMessages(event.id);
+  const statusMessageMap = new Map(statusMessages.map((sm) => [sm.user_id, sm]));
+
+  for (const memberRow of members) {
+    const member = memberRow.users;
+    if (!member?.telegram_id) {
+      continue;
+    }
+
+    const sm = statusMessageMap.get(member.id);
+    if (sm) {
+      try {
+        await ctx.telegram.deleteMessage(sm.chat_id, sm.message_id);
+      } catch (error) {
+        console.error(`Failed to delete status message for cancelled event ${event.id}:`, error.message);
+      }
+    }
+
+    try {
+      const text = [
+        '❌ Event cancelled',
+        '',
+        `Group: ${event.groups?.name || 'Unknown'}`,
+        `Event: ${event.title}`,
+        event.description ? `Description: ${event.description}` : null,
+        `Starts: ${formatRelativeTime(event.starts_at)}`
+      ].filter(Boolean).join('\n');
+
+      await ctx.telegram.sendMessage(member.telegram_id, text);
+    } catch (error) {
+      console.error(`Failed to send cancellation notice for event ${event.id} to ${member.telegram_id}:`, error.message);
+    }
+  }
+
+  for (const sm of statusMessages) {
+    await eventService.deleteEventStatusMessage(event.id, sm.user_id);
+  }
 }
 
 async function startCreateEvent(ctx) {

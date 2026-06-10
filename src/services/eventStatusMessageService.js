@@ -1,17 +1,18 @@
 const eventService = require('./eventService');
 const groupService = require('./groupService');
 const { formatEventStatus } = require('../utils/formatEvent');
-const { eventResponseKeyboard } = require('../utils/keyboards');
+const { eventActionsKeyboard } = require('../utils/keyboards');
 
 async function sendEventStatusMessage(ctx, event, user, responses = [], groupName = null) {
   if (!user?.telegram_id) {
     return null;
   }
 
+  const isCreator = user.id === event.creator_id;
   const sentMessage = await ctx.telegram.sendMessage(
     user.telegram_id,
     formatEventStatus(event, responses, groupName),
-    eventResponseKeyboard(event.id)
+    eventActionsKeyboard(event.id, isCreator)
   );
 
   await eventService.upsertEventStatusMessage(
@@ -48,7 +49,8 @@ async function replaceEventStatusMessage(ctx, event, user, responses = null, sta
         event,
         eventResponses,
         currentStatusMessage.chat_id,
-        currentStatusMessage.message_id
+        currentStatusMessage.message_id,
+        user
       );
 
       if (editedOldStatusMessage) {
@@ -125,14 +127,15 @@ async function deleteTelegramMessage(ctx, eventId, chatId, messageId) {
   }
 }
 
-async function editTelegramMessage(ctx, event, responses, chatId, messageId) {
+async function editTelegramMessage(ctx, event, responses, chatId, messageId, user) {
   try {
+    const isCreator = user?.id === event.creator_id;
     await ctx.telegram.editMessageText(
       chatId,
       messageId,
       undefined,
       formatEventStatus(event, responses),
-      eventResponseKeyboard(event.id)
+      eventActionsKeyboard(event.id, isCreator)
     );
     return { chat_id: chatId, message_id: messageId };
   } catch (error) {

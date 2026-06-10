@@ -4,6 +4,7 @@ const { registerStartHandlers } = require('../handlers/start');
 const { registerGroupHandlers } = require('../handlers/groups');
 const { registerEventHandlers } = require('../handlers/events');
 const { registerResponseHandlers } = require('../handlers/responses');
+const { registerFeedbackHandlers } = require('../handlers/feedback');
 const userService = require('../services/userService');
 
 function createBot() {
@@ -17,7 +18,8 @@ function createBot() {
     { command: 'creategroup', description: 'Create a group' },
     { command: 'groups', description: 'List your groups' },
     { command: 'newevent', description: 'Create an event' },
-    { command: 'events', description: 'Show upcoming events' }
+    { command: 'events', description: 'Show upcoming events' },
+    { command: 'feedback', description: 'Send feedback' }
   ]).catch((error) => {
     console.error('Failed to set bot commands:', error.message);
   });
@@ -34,6 +36,7 @@ function createBot() {
   registerGroupHandlers(bot);
   registerEventHandlers(bot);
   registerResponseHandlers(bot);
+  registerFeedbackHandlers(bot);
 
   bot.catch((error, ctx) => {
     console.error(`Bot error for update ${ctx.update.update_id}:`, error);

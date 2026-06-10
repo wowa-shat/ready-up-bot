@@ -71,6 +71,14 @@ create table if not exists public.event_status_messages (
   unique (event_id, user_id)
 );
 
+create table if not exists public.feedback (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.users(id) on delete cascade,
+  message text not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create or replace function public.set_updated_at()
 returns trigger as $$
 begin
@@ -104,7 +112,13 @@ create trigger event_status_messages_set_updated_at
 before update on public.event_status_messages
 for each row execute function public.set_updated_at();
 
+drop trigger if exists feedback_set_updated_at on public.feedback;
+create trigger feedback_set_updated_at
+before update on public.feedback
+for each row execute function public.set_updated_at();
+
 create index if not exists group_members_user_id_idx on public.group_members(user_id);
 create index if not exists events_group_id_idx on public.events(group_id);
 create index if not exists event_responses_event_id_idx on public.event_responses(event_id);
 create index if not exists event_status_messages_event_id_idx on public.event_status_messages(event_id);
+create index if not exists feedback_user_id_idx on public.feedback(user_id);

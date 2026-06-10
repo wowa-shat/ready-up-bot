@@ -4,13 +4,14 @@ const menuLabels = {
   createGroup: 'Create group',
   listGroups: 'My groups',
   createEvent: 'Create event',
-  upcomingEvents: 'Upcoming events'
+  upcomingEvents: 'Upcoming events',
+  feedback: 'Feedback'
 };
 
 function mainMenuKeyboard() {
   return Markup.keyboard([
     [menuLabels.createGroup, menuLabels.listGroups],
-    [menuLabels.createEvent],
+    [menuLabels.createEvent, menuLabels.feedback],
     [menuLabels.upcomingEvents]
   ]).resize();
 }
@@ -59,6 +60,22 @@ function eventResponseKeyboard(eventId) {
   ]);
 }
 
+function eventActionsKeyboard(eventId, isCreator = false) {
+  const buttons = [
+    [
+      Markup.button.callback('Going', `response:${eventId}:going`),
+      Markup.button.callback('Maybe', `response:${eventId}:maybe`),
+      Markup.button.callback('No', `response:${eventId}:no`)
+    ]
+  ];
+
+  if (isCreator) {
+    buttons.push([Markup.button.callback('❌ Cancel event', `event:cancel:${eventId}`)]);
+  }
+
+  return Markup.inlineKeyboard(buttons);
+}
+
 function confirmDeleteGroupKeyboard(groupId) {
   return Markup.inlineKeyboard([
     [
@@ -76,6 +93,7 @@ function skipKeyboard(skipAction) {
 
 module.exports = {
   confirmDeleteGroupKeyboard,
+  eventActionsKeyboard,
   eventResponseKeyboard,
   groupActionsKeyboard,
   groupSelectionKeyboard,

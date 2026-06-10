@@ -47,6 +47,21 @@ async function deleteEvent(eventId) {
   }
 }
 
+async function cancelEvent(eventId) {
+  const { data, error } = await supabase
+    .from('events')
+    .update({ status: 'cancelled' })
+    .eq('id', eventId)
+    .select('*, groups(name)')
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return data;
+}
+
 async function listEventsDueForStartNotification() {
   const { data, error } = await supabase
     .from('events')
@@ -221,6 +236,7 @@ async function setCreatorStatusMessage(eventId, chatId, messageId) {
 }
 
 module.exports = {
+  cancelEvent,
   createEvent,
   deleteEvent,
   getEventById,
