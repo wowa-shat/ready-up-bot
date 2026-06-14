@@ -1,7 +1,8 @@
 (async () => {
-  // Configure these values before deploying the Mini App
-  const SUPABASE_URL = 'https://bykbginsgocmoymmales.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5a2JnaW5zZ29jbW95bW1hbGVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTY1MTksImV4cCI6MjA5NjE3MjUxOX0.V8tnXzC3uH7dzqyFABeRUT68oy54Er8L8sg0h0zUkVk';
+  // Reads config from window.READYUP_CONFIG set in index.html
+  const SUPABASE_URL = window.READYUP_CONFIG?.SUPABASE_URL || 'https://your-project.supabase.co';
+  const SUPABASE_KEY = window.READYUP_CONFIG?.SUPABASE_KEY || 'your-supabase-anon-key';
+  const BOT_USERNAME = window.READYUP_CONFIG?.BOT_USERNAME || 'your_bot_username';
 
   const tg = window.Telegram.WebApp;
   tg.ready();
@@ -104,7 +105,40 @@
       return;
     }
 
-    events = data || [];
+    const loadedEvents = data || [];
+    const eventIds = loadedEvents.map(e => e.id);
+
+    // Load responses for all events
+    let responsesMap = {};
+    if (eventIds.length > 0) {
+      const { data: respData } = await supabase
+        .from('event_responses')
+        .select('event_id, status')
+        .in('event_id', eventIds);
+
+      for (const r of (respData || [])) {
+        if (!responsesMap[r.event_id]) responsesMap[r.event_id] = { going: 0, maybe: 0, no: 0 };
+        responsesMap[r.event_id][r.status]++;
+      }
+    }
+
+    // Load member counts for all groups
+    const { data: membersData } = await supabase
+      .from('group_members')
+      .select('group_id')
+      .in('group_id', groupIds);
+
+    const memberCountMap = {};
+    for (const m of (membersData || [])) {
+      memberCountMap[m.group_id] = (memberCountMap[m.group_id] || 0) + 1;
+    }
+
+    events = loadedEvents.map(e => ({
+      ...e,
+      _responses: responsesMap[e.id] || { going: 0, maybe: 0, no: 0 },
+      _memberCount: memberCountMap[e.group_id] || 0
+    }));
+
     renderEvents();
   }
 
@@ -169,12 +203,34 @@
       const startsAt = new Date(e.starts_at);
       const relative = formatRelativeTime(startsAt);
       const statusClass = e.status === 'full' ? 'badge-full' : 'badge-open';
+      const r = e._responses || { going: 0, maybe: 0, no: 0 };
+      const total = r.going + r.maybe + r.no;
+      const memberCount = e._memberCount || 0;
+      const pctGoing = total > 0 ? (r.going / total * 100) : 0;
+      const pctMaybe = total > 0 ? (r.maybe / total * 100) : 0;
+      const pctNo = total > 0 ? (r.no / total * 100) : 0;
+
+      let barHtml = '';
+      if (total > 0) {
+        barHtml = `
+          <div class="response-bar">
+            ${pctGoing > 0 ? `<div class="response-bar-segment going" style="width:${pctGoing.toFixed(1)}%"></div>` : ''}
+            ${pctMaybe > 0 ? `<div class="response-bar-segment maybe" style="width:${pctMaybe.toFixed(1)}%"></div>` : ''}
+            ${pctNo > 0 ? `<div class="response-bar-segment no" style="width:${pctNo.toFixed(1)}%"></div>` : ''}
+          </div>
+          <div class="response-bar-label">${total}/${memberCount} responded</div>
+        `;
+      } else {
+        barHtml = `<div class="response-bar-label">0/${memberCount} responded</div>`;
+      }
+
       return `
         <div class="event-card" data-event-id="${e.id}">
           <span class="event-status-badge ${statusClass}">${e.status}</span>
           <div class="event-card-title">${escapeHtml(e.title)}</div>
           ${e.description ? `<div class="event-card-desc">${escapeHtml(e.description)}</div>` : ''}
           <div class="event-card-meta">${escapeHtml(e.groups?.name || 'Unknown')} &middot; ${relative}</div>
+          ${barHtml}
         </div>
       `;
     }).join('');
@@ -192,13 +248,14 @@
     const content = document.getElementById('group-detail-content');
 
     const members = await loadGroupMembers(groupId);
-    const botUsername = tg.initDataUnsafe?.user?.username || 'your_bot';
+    const botUsername = BOT_USERNAME;
     const inviteLink = `https://t.me/${botUsername}?start=join_${group.invite_token}`;
 
     content.innerHTML = `
       <div class="invite-box">
         <label>Invite link</label>
-        <code>${escapeHtml(inviteLink)}</code>
+        <code id="invite-link-code">${escapeHtml(inviteLink)}</code>
+        <button class="btn-secondary" id="btn-copy-invite" style="width:100%;margin-top:8px;">Copy to clipboard</button>
       </div>
       <h3 style="margin-top:20px;font-size:15px;font-weight:600;">Members (${members.length})</h3>
       <div class="members-list">
@@ -227,6 +284,17 @@
         }
         await loadGroups();
         showScreen('main');
+      });
+    }
+
+    const copyBtn = document.getElementById('btn-copy-invite');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        navigator.clipboard.writeText(inviteLink).then(() => {
+          tg.showPopup({ title: 'Copied', message: 'Invite link copied to clipboard!' });
+        }).catch(() => {
+          tg.showAlert('Failed to copy link.');
+        });
       });
     }
 

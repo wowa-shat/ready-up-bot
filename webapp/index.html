@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
@@ -8,6 +9,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
   <div id="app">
     <div id="loading" class="screen active">
@@ -90,6 +92,15 @@
     </div>
   </div>
 
+  <script>
+    // ==== Configure your Mini App here ====
+    window.READYUP_CONFIG = {
+      SUPABASE_URL: 'https://bykbginsgocmoymmales.supabase.co',
+      SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5a2JnaW5zZ29jbW95bW1hbGVzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1OTY1MTksImV4cCI6MjA5NjE3MjUxOX0.V8tnXzC3uH7dzqyFABeRUT68oy54Er8L8sg0h0zUkVk',
+      BOT_USERNAME: 'ready_up_bot'  // without @, e.g. "ReadyUpBot"
+    };
+  </script>
   <script src="app.js"></script>
 </body>
+
 </html>
