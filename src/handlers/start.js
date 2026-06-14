@@ -3,7 +3,7 @@ const groupService = require('../services/groupService');
 const userService = require('../services/userService');
 const { Markup } = require('telegraf');
 
-const WEBAPP_URL = 'https://wowa-shat.github.io/ready-up-bot/webapp';
+const WEBAPP_URL = process.env.WEBAPP_URL;
 
 function registerStartHandlers(bot) {
   bot.start(async (ctx) => {
