@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>ReadyUp</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <div id="loading" class="screen active">
+      <div class="spinner"></div>
+      <p>Loading...</p>
+    </div>
+
+    <div id="main" class="screen">
+      <header class="app-header">
+        <h1>ReadyUp</h1>
+        <p class="subtitle">Your groups & events</p>
+      </header>
+
+      <nav class="tabs">
+        <button class="tab-btn active" data-tab="groups">Groups</button>
+        <button class="tab-btn" data-tab="events">Events</button>
+      </nav>
+
+      <div id="groups-tab" class="tab-content active">
+        <div class="actions">
+          <button id="btn-create-group" class="btn-primary">+ Create Group</button>
+        </div>
+        <div id="groups-list" class="list"></div>
+      </div>
+
+      <div id="events-tab" class="tab-content">
+        <div class="actions">
+          <button id="btn-create-event" class="btn-primary">+ Create Event</button>
+        </div>
+        <div id="events-list" class="list"></div>
+      </div>
+    </div>
+
+    <div id="group-detail" class="screen">
+      <header class="screen-header">
+        <button class="btn-back">&larr; Back</button>
+        <h2 id="group-detail-name">Group</h2>
+      </header>
+      <div id="group-detail-content" class="content"></div>
+    </div>
+
+    <div id="event-detail" class="screen">
+      <header class="screen-header">
+        <button class="btn-back">&larr; Back</button>
+        <h2 id="event-detail-title">Event</h2>
+      </header>
+      <div id="event-detail-content" class="content"></div>
+    </div>
+
+    <div id="create-group" class="screen">
+      <header class="screen-header">
+        <button class="btn-back">&larr; Back</button>
+        <h2>Create Group</h2>
+      </header>
+      <div class="form">
+        <label>Group name</label>
+        <input type="text" id="group-name-input" placeholder="My Squad">
+        <button id="btn-submit-group" class="btn-primary">Create</button>
+      </div>
+    </div>
+
+    <div id="create-event" class="screen">
+      <header class="screen-header">
+        <button class="btn-back">&larr; Back</button>
+        <h2>Create Event</h2>
+      </header>
+      <div class="form">
+        <label>Group</label>
+        <select id="event-group-select"></select>
+        <label>Title</label>
+        <input type="text" id="event-title-input" placeholder="Friday Night Game">
+        <label>Description</label>
+        <input type="text" id="event-desc-input" placeholder="Optional">
+        <label>Starts in (minutes)</label>
+        <input type="number" id="event-minutes-input" placeholder="30" min="0">
+        <label>Required players</label>
+        <input type="number" id="event-players-input" placeholder="Optional" min="1">
+        <button id="btn-submit-event" class="btn-primary">Create Event</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

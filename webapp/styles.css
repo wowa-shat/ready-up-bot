@@ -1,0 +1,429 @@
+/* Telegram Mini App styles */
+:root {
+  --tg-bg: var(--tg-theme-bg-color, #ffffff);
+  --tg-text: var(--tg-theme-text-color, #000000);
+  --tg-hint: var(--tg-theme-hint-color, #999999);
+  --tg-link: var(--tg-theme-link-color, #2481cc);
+  --tg-button: var(--tg-theme-button-color, #2481cc);
+  --tg-button-text: var(--tg-theme-button-text-color, #ffffff);
+  --tg-secondary-bg: var(--tg-theme-secondary-bg-color, #f5f5f5);
+  --tg-section-bg: var(--tg-theme-section-bg-color, #f5f5f5);
+  --tg-section-header-text: var(--tg-theme-section-header-text-color, #000000);
+  --tg-destructive-text: var(--tg-theme-destructive-text-color, #ff3b30);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--tg-bg);
+  color: var(--tg-text);
+  min-height: 100vh;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#app {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+/* Screens */
+.screen {
+  display: none;
+  min-height: 100vh;
+  padding: 16px;
+}
+
+.screen.active {
+  display: block;
+}
+
+/* Loading */
+#loading {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+}
+
+#loading.active {
+  display: flex;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--tg-secondary-bg);
+  border-top-color: var(--tg-button);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Header */
+.app-header {
+  text-align: center;
+  padding: 24px 0 16px;
+}
+
+.app-header h1 {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.app-header .subtitle {
+  color: var(--tg-hint);
+  font-size: 14px;
+}
+
+.screen-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 0 16px;
+  border-bottom: 1px solid var(--tg-secondary-bg);
+  margin-bottom: 16px;
+}
+
+.screen-header h2 {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  background: var(--tg-secondary-bg);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--tg-text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.tab-btn.active {
+  background: var(--tg-bg);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* Buttons */
+.btn-primary {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 10px;
+  background: var(--tg-button);
+  color: var(--tg-button-text);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.btn-primary:active {
+  opacity: 0.85;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: var(--tg-link);
+  font-size: 15px;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.btn-secondary {
+  padding: 8px 14px;
+  border: 1px solid var(--tg-button);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--tg-button);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-destructive {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: var(--tg-destructive-text);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* Actions bar */
+.actions {
+  margin-bottom: 12px;
+}
+
+/* Lists */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.list-item {
+  background: var(--tg-secondary-bg);
+  border-radius: 12px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.list-item:active {
+  background: var(--tg-section-bg);
+}
+
+.list-item-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.list-item-subtitle {
+  font-size: 13px;
+  color: var(--tg-hint);
+}
+
+.list-item-meta {
+  font-size: 12px;
+  color: var(--tg-hint);
+  margin-top: 6px;
+}
+
+/* Event card */
+.event-card {
+  background: var(--tg-secondary-bg);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+
+.event-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.event-card-desc {
+  font-size: 13px;
+  color: var(--tg-hint);
+  margin-bottom: 8px;
+}
+
+.event-card-meta {
+  font-size: 12px;
+  color: var(--tg-hint);
+  margin-bottom: 10px;
+}
+
+.event-status-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.badge-open { background: #34c759; color: #fff; }
+.badge-full { background: #ff9500; color: #fff; }
+.badge-cancelled { background: #ff3b30; color: #fff; }
+
+/* Response buttons */
+.response-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.response-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.response-btn:active {
+  opacity: 0.8;
+}
+
+.response-btn.going {
+  background: #34c759;
+  color: #fff;
+}
+
+.response-btn.maybe {
+  background: #ff9500;
+  color: #fff;
+}
+
+.response-btn.no {
+  background: #8e8e93;
+  color: #fff;
+}
+
+.response-btn.selected {
+  box-shadow: inset 0 0 0 2px var(--tg-text);
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--tg-section-header-text);
+}
+
+.form input,
+.form select {
+  padding: 12px 14px;
+  border: 1px solid var(--tg-secondary-bg);
+  border-radius: 10px;
+  background: var(--tg-bg);
+  color: var(--tg-text);
+  font-size: 15px;
+  outline: none;
+}
+
+.form input:focus,
+.form select:focus {
+  border-color: var(--tg-button);
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--tg-hint);
+  font-size: 14px;
+}
+
+/* Members list */
+.members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--tg-bg);
+  border-radius: 8px;
+}
+
+.member-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--tg-button);
+  color: var(--tg-button-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.member-name {
+  font-size: 14px;
+}
+
+/* Invite link */
+.invite-box {
+  background: var(--tg-secondary-bg);
+  border-radius: 10px;
+  padding: 12px;
+  margin-top: 12px;
+}
+
+.invite-box label {
+  font-size: 12px;
+  color: var(--tg-hint);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.invite-box code {
+  display: block;
+  font-size: 13px;
+  word-break: break-all;
+  background: var(--tg-bg);
+  padding: 8px;
+  border-radius: 6px;
+  user-select: all;
+}
+
+/* Responses summary */
+.responses-summary {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.response-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: var(--tg-bg);
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.response-row .count {
+  font-weight: 600;
+}

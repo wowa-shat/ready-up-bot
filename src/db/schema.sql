@@ -122,3 +122,72 @@ create index if not exists events_group_id_idx on public.events(group_id);
 create index if not exists event_responses_event_id_idx on public.event_responses(event_id);
 create index if not exists event_status_messages_event_id_idx on public.event_status_messages(event_id);
 create index if not exists feedback_user_id_idx on public.feedback(user_id);
+
+-- ============================================
+-- Row Level Security (RLS) for Mini App safety
+-- ============================================
+
+-- Users: readable by all (names in events), insertable by all (upsert via telegram_id)
+alter table public.users enable row level security;
+
+drop policy if exists "Users readable by all" on public.users;
+create policy "Users readable by all" on public.users for select using (true);
+
+drop policy if exists "Users insertable by all" on public.users;
+create policy "Users insertable by all" on public.users for insert with check (true);
+
+drop policy if exists "Users updatable by all" on public.users;
+create policy "Users updatable by all" on public.users for update using (true) with check (true);
+
+-- Groups: readable by all, insertable by all, deletable by creator
+alter table public.groups enable row level security;
+
+drop policy if exists "Groups readable by all" on public.groups;
+create policy "Groups readable by all" on public.groups for select using (true);
+
+drop policy if exists "Groups insertable by all" on public.groups;
+create policy "Groups insertable by all" on public.groups for insert with check (true);
+
+drop policy if exists "Groups deletable by creator" on public.groups;
+create policy "Groups deletable by creator"
+  on public.groups for delete
+  using (creator_id = (select id from public.users where telegram_id = current_setting('app.current_telegram_id', true)::bigint));
+
+-- Group members: readable/insertable by all
+alter table public.group_members enable row level security;
+
+drop policy if exists "Group members readable by all" on public.group_members;
+create policy "Group members readable by all" on public.group_members for select using (true);
+
+drop policy if exists "Group members insertable by all" on public.group_members;
+create policy "Group members insertable by all" on public.group_members for insert with check (true);
+
+-- Events: readable/insertable/updatable by all (filtered in app by group membership)
+alter table public.events enable row level security;
+
+drop policy if exists "Events readable by all" on public.events;
+create policy "Events readable by all" on public.events for select using (true);
+
+drop policy if exists "Events insertable by all" on public.events;
+create policy "Events insertable by all" on public.events for insert with check (true);
+
+drop policy if exists "Events updatable by all" on public.events;
+create policy "Events updatable by all" on public.events for update using (true) with check (true);
+
+-- Event responses: readable/insertable/updatable by all
+alter table public.event_responses enable row level security;
+
+drop policy if exists "Event responses readable by all" on public.event_responses;
+create policy "Event responses readable by all" on public.event_responses for select using (true);
+
+drop policy if exists "Event responses insertable by all" on public.event_responses;
+create policy "Event responses insertable by all" on public.event_responses for insert with check (true);
+
+drop policy if exists "Event responses updatable by all" on public.event_responses;
+create policy "Event responses updatable by all" on public.event_responses for update using (true) with check (true);
+
+-- Feedback: insertable by all, not readable via API
+alter table public.feedback enable row level security;
+
+drop policy if exists "Feedback insertable by all" on public.feedback;
+create policy "Feedback insertable by all" on public.feedback for insert with check (true);
